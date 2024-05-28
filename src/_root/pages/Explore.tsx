@@ -1,14 +1,34 @@
 import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
-import SearchResults from "@/components/shared/SearchResults";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/useDebounce";
 import {
   useGetPosts,
   useSearchPosts,
 } from "@/lib/react-query/queriesAndMutations";
+import { Models } from "appwrite";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
+
+type SearchResultsProps = {
+  isSearchFetching: boolean;
+  searchedPosts: Models.Document[];
+};
+
+const SearchResults = ({
+  isSearchFetching,
+  searchedPosts,
+}: SearchResultsProps) => {
+  if (isSearchFetching) return <Loader />;
+
+  if (searchedPosts && searchedPosts.length > 0) {
+    return <GridPostList posts={searchedPosts} />;
+  }
+
+  return (
+    <p className="text-light-4 mt-10 text-center w-full">No results Found</p>
+  );
+};
 
 const Explore = () => {
   const { ref, inView } = useInView();
@@ -17,7 +37,7 @@ const Explore = () => {
 
   const [searchValue, setSearchValue] = useState("");
   const debouncedSearch = useDebounce(searchValue, 500);
-  const { data: searchedPosts, isFetching: isSearchFetching } =
+  const { data: searchedPostsData, isFetching: isSearchFetching } =
     useSearchPosts(debouncedSearch);
 
   useEffect(() => {
@@ -78,13 +98,13 @@ const Explore = () => {
         {shouldShowSearchResults ? (
           <SearchResults
             isSearchFetching={isSearchFetching}
-            searchedPosts={searchedPosts}
+            searchedPosts={searchedPostsData?.documents || []}
           />
         ) : shouldShowPosts ? (
           <p className="text-light-4 mt-10 text-center w-full">End of posts</p>
         ) : (
           posts.pages.map((item, index) => (
-            <GridPostList key={`page-${index}`} posts={item.documents} />
+            <GridPostList key={`page-${index}`} posts={item.documents || []} />
           ))
         )}
       </div>

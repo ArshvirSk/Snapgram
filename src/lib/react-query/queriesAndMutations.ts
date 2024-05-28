@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   useInfiniteQuery,
   useMutation,
@@ -182,6 +183,7 @@ export const useGetPosts = () => {
       const lastId = lastPage.documents[lastPage.documents.length - 1].$id;
       return lastId;
     },
+    initialPageParam: null, // Add the initialPageParam property here
   });
 };
 
